@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>길찾기</title>
+    <link rel="stylesheet" href="/static/Mstyle.css" />
+    <style>
+        /* profile-home-btn 클래스 스타일 예시 */
+        .profile-home-btn {
+            margin-top: 16px;
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #0077ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .profile-home-btn:hover {
+            background-color: #005ecb;
+        }
+    </style>
+</head>
+<body>
+    <h2>길찾기</h2>
+
+    <form id="routeForm">
+        <label>
+            출발지 이름:
+            <input type="text" id="fromName" placeholder="출발지명(예: 서울역)" required />
+        </label>
+        <br />
+
+        <!-- 위도/경도 숨김 필드 -->
+        <input type="hidden" id="fromLat" placeholder="예: 37.555" required />
+        <input type="hidden" id="fromLng" placeholder="예: 126.9707" required />
+
+        <label>
+            도착지 이름:
+            <input type="text" id="toName" placeholder="도착지명(예: 강남역)" required />
+        </label>
+        <br />
+
+        <input type="hidden" id="toLat" placeholder="예: 37.4979" required />
+        <input type="hidden" id="toLng" placeholder="예: 127.0276" required />
+
+        <label>
+            이동수단:
+            <select id="vehicle">
+                <option value="car">자동차</option>
+                <option value="walk">도보</option>
+                <option value="pubtrans">대중교통</option>
+            </select>
+        </label>
+        <br />
+
+        <button type="submit">길찾기</button>
+    </form>
+
+    <!-- 메인으로 가기 버튼 -->
+    <button class="profile-home-btn" onclick="goToHome()">메인으로</button>
+
+    <script>
+        // URL 파라미터에서 값 추출하여 폼에 자동 할당
+        function getParam(name) {
+            return new URLSearchParams(window.location.search).get(name) || "";
+        }
+
+        window.onload = function() {
+            document.getElementById('fromName').value = getParam('srcName');
+            document.getElementById('toName').value = getParam('destName');
+            document.getElementById('fromLat').value = getParam('srcLat');
+            document.getElementById('fromLng').value = getParam('srcLng');
+            document.getElementById('toLat').value = getParam('destLat');
+            document.getElementById('toLng').value = getParam('destLng');
+        };
+
+        // 길찾기 폼 제출 이벤트
+        document.getElementById('routeForm').onsubmit = function(e) {
+            e.preventDefault();
+
+            const vehicle = document.getElementById('vehicle').value;
+            const fromName = document.getElementById('fromName').value.trim();
+            const fromLat = document.getElementById('fromLat').value.trim();
+            const fromLng = document.getElementById('fromLng').value.trim();
+            const toName = document.getElementById('toName').value.trim();
+            const toLat = document.getElementById('toLat').value.trim();
+            const toLng = document.getElementById('toLng').value.trim();
+
+            if (!fromLat || !fromLng || !toLat || !toLng) {
+                alert("출발지와 도착지의 '위도'와 '경도' 정보가 필요합니다.");
+                return;
+            }
+
+            const url = `https://map.kakao.com/link/by/${vehicle}/` +
+                        `${encodeURIComponent(fromName)},${fromLat},${fromLng}/` +
+                        `${encodeURIComponent(toName)},${toLat},${toLng}`;
+            window.open(url, '_blank');
+        };
+
+        // 메인 페이지로 이동하는 함수
+     function goToHome() {
+        window.location.href = "/";
+    }
+    </script>
+</body>
+</html>

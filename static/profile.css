@@ -1,0 +1,111 @@
+body {
+    background: #f7f9fb;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+.profile-container {
+    max-width: 420px;
+    margin: 35px auto;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    padding: 40px 35px 30px 35px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.profile-home-btn {
+    background: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 21px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 18px;
+    transition: background 0.15s;
+    align-self: flex-end;
+}
+.profile-home-btn:hover {
+    background: #388e3c;
+}
+.profile-img {
+    width: 74px; height: 74px;
+    border-radius: 50%;
+    border: 2px solid #eee;
+    object-fit: cover;
+    margin-bottom: 14px;
+}
+.profile-nickname { font-size: 21px; font-weight: bold; margin-bottom: 6px; }
+.profile-email { font-size: 14px; color: #888; margin-bottom: 18px; }
+.nickname-edit-area { display: flex; gap: 6px; margin-bottom: 8px; }
+.nickname-edit-area input {
+    border: 1px solid #ccc; border-radius: 6px;
+    padding: 7px 9px; font-size: 15px;
+}
+.nickname-edit-area button {
+    border: none; background: #4caf50; color: #fff; font-weight: bold;
+    padding: 7px 17px; border-radius: 6px; cursor: pointer;
+}
+.nickname-edit-area button:hover { background: #43a047; }
+.profile-tip {
+    font-size: 13px; color: #888; margin-bottom: 18px;
+    align-self: flex-start;
+}
+.favorites-list { width: 100%; margin-top: 16px; }
+.favorites-list h3 {
+    text-align: left; color: #4caf50; font-size: 18px; margin-bottom: 9px;
+}
+.favorite-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; border-bottom: 1px solid #f2f2f2;
+}
+.favorite-name { font-size: 16px; line-height: 1.7; }
+.favorite-remove {
+    border: none; background: none; color: #c33; font-size: 15px;
+    cursor: pointer; border-radius: 3px; padding: 2px 8px;
+    transition: background 0.12s;
+}
+.favorite-remove:hover { background: #fab; }
+.favorites-empty {
+    color: #aaa;
+    text-align: center;
+    padding: 28px 0 8px 0;
+}
+.profile-logout-btn {
+    margin: 32px 0 0 0; background: #f43; color: #fff; border: none;
+    padding: 10px 25px; border-radius: 7px; cursor: pointer; font-size: 15px;
+    font-weight: bold; transition: background 0.2s;
+}
+.profile-logout-btn:hover { background: #c22; }
+
+/* 모달(로그인) 스타일 */
+.modal {
+    position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+    background: #222; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    padding: 36px 25px 28px 25px;
+    width: 320px;
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+}
+.modal-title { color: #6ee787; font-size: 26px; font-weight: bold; margin-bottom: 32px; margin-top: 6px; }
+.modal-close { position: absolute; right: 16px; top: 13px; background: none; border: none; color: #6ee787; font-size: 27px; cursor: pointer; }
+.kakao-login-btn {
+    width: 100%; height: 45px; background: #fee500; color: #191600; border: none;
+    border-radius: 8px; font-size: 17px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; transition: background 0.16s; margin-top: 12px;
+}
+.kakao-login-btn:hover { background: #ffe14a; }
+.kakao-icon { font-size: 21px; }
+
+@media (max-width:480px) {
+    .profile-container { max-width:98vw; padding:18px 4vw;}
+    .modal-content{width:98vw;}
+}

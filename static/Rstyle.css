@@ -1,0 +1,53 @@
+/* 리뷰 작성 폼을 세로로 배치 */
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;  /* 각 항목 사이의 여백 */
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+input[type="text"] {
+    font-size: 16px;
+}
+
+textarea {
+    height: 120px;
+    resize: none;
+}
+
+/* 기본 버튼 스타일 */
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+/* 작고 간결한 버튼 스타일 */
+button.small-button {
+    font-size: 12px !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    background-color: #bdc3c7 !important;
+    color: #333 !important;
+    border: 1px solid #999 !important;
+    margin: 2px !important;
+}
+
+button.small-button:hover {
+    background-color: #a5acb0 !important;
+}

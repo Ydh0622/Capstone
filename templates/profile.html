@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 프로필 | MAP PICK</title>
+    <link rel="stylesheet" href="/static/profile.css">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+</head>
+<body>
+    <!-- 로그인 모달 (비로그인 시 노출) -->
+    <div id="loginModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeLoginModal()">×</button>
+            <div class="modal-title">로그인</div>
+            <button class="kakao-login-btn" onclick="loginWithKakao()">
+                <span class="kakao-icon">💬</span> 카카오 로그인
+            </button>
+        </div>
+    </div>
+
+    <div class="profile-container" id="profileContainer" style="display:none;">
+        <img id="profileImg" class="profile-img" src="" alt="프로필 이미지">
+        <div class="profile-nickname" id="profileNickname"></div>
+        <div class="profile-email" id="profileEmail"></div>
+
+        <div class="nickname-edit-area">
+            <input type="text" id="serviceNicknameInput" placeholder="별명(서비스 닉네임)">
+            <button onclick="saveServiceNickname()">저장</button>
+        </div>
+        <div style="font-size:13px; color:#888; margin-bottom:18px;">
+            * 별명은 서비스 내에서만 사용됩니다.
+        </div>
+
+        <div class="favorites-list">
+            <h3>내 즐겨찾기</h3>
+            <div id="favoritesList"></div>
+        </div>
+
+        <!-- 버튼 row를 같은 줄로 묶어서 정렬 -->
+        <div class="profile-btn-row">
+            <button class="profile-home-btn" onclick="goToHome()">메인으로</button>
+            <button class="profile-logout-btn" onclick="kakaoLogout()">로그아웃</button>
+</div>
+
+    </div>
+
+    <script>
+    Kakao.init('26e11c4d43fec012ee00f28f68e17244');
+    let kakaoUser = null;
+    let favorites = [];
+    let serviceNickname = "";
+
+    function openLoginModal() {
+        document.getElementById("loginModal").style.display = "flex";
+    }
+    function closeLoginModal() {
+        document.getElementById("loginModal").style.display = "none";
+    }
+
+    function loginWithKakao() {
+        Kakao.Auth.login({
+            success: function(authObj) {
+                Kakao.Auth.setAccessToken(authObj.access_token);
+                getUserInfo();
+                closeLoginModal();
+            },
+            fail: function(err) {
+                alert('카카오 로그인 실패: ' + JSON.stringify(err));
+            }
+        });
+    }
+
+    function getUserInfo() {
+        Kakao.API.request({
+            url: '/v2/user/me',
+            success: function(res) {
+                kakaoUser = res;
+                showProfile();
+                closeLoginModal();
+            },
+            fail: function(error) {
+                alert('사용자 정보 요청 실패: ' + JSON.stringify(error));
+                openLoginModal();
+                document.getElementById("profileContainer").style.display = "none";
+            }
+        });
+    }
+
+    function kakaoLogout() {
+        Kakao.Auth.logout(function() {
+            kakaoUser = null;
+            document.getElementById("profileContainer").style.display = "none";
+            openLoginModal();
+        });
+    }
+
+    function saveServiceNickname() {
+        const input = document.getElementById("serviceNicknameInput");
+        const nickname = input.value.trim();
+        if (kakaoUser && kakaoUser.id) {
+            localStorage.setItem("serviceNickname_" + kakaoUser.id, nickname);
+            alert("별명이 저장되었습니다!");
+            showProfile();
+        }
+    }
+
+    function removeFavorite(idx) {
+        if (kakaoUser && kakaoUser.id) {
+            const key = "favorites_" + kakaoUser.id;
+            favorites.splice(idx, 1);
+            localStorage.setItem(key, JSON.stringify(favorites));
+            showProfile();
+        }
+    }
+
+    function showProfile() {
+        if (!kakaoUser || !kakaoUser.kakao_account) {
+            document.getElementById("profileContainer").style.display = "none";
+            openLoginModal();
+            return;
+        }
+        document.getElementById("profileContainer").style.display = "block";
+        document.getElementById("loginModal").style.display = "none";
+
+        const profile = kakaoUser.kakao_account.profile;
+        document.getElementById("profileImg").src = profile.profile_image_url || "/static/default_profile.png";
+        document.getElementById("profileNickname").innerText = profile.nickname || "닉네임 없음";
+        document.getElementById("profileEmail").innerText = kakaoUser.kakao_account.email || "";
+
+        if (kakaoUser.id) {
+            serviceNickname = localStorage.getItem("serviceNickname_" + kakaoUser.id) || "";
+            document.getElementById("serviceNicknameInput").value = serviceNickname;
+        }
+
+        if (kakaoUser.id) {
+            favorites = JSON.parse(localStorage.getItem("favorites_" + kakaoUser.id) || "[]");
+        } else {
+            favorites = [];
+        }
+        const favListDiv = document.getElementById("favoritesList");
+        favListDiv.innerHTML = "";
+        if (favorites.length === 0) {
+            favListDiv.innerHTML = "<div style='color:#aaa;'>즐겨찾기한 장소가 없습니다.</div>";
+        } else {
+            favorites.forEach((fav, idx) => {
+                const div = document.createElement("div");
+                div.className = "favorite-item";
+                div.innerHTML = `<span class="favorite-name">${fav.place_name || fav.name || "이름 없음"}</span>
+                    <button class="favorite-remove" onclick="removeFavorite(${idx})" title="삭제">✕</button>`;
+                favListDiv.appendChild(div);
+            });
+        }
+    }
+
+    function goToHome() {
+        window.location.href = "/";
+    }
+
+    function checkKakaoLoginStatus() {
+        if (Kakao.Auth.getAccessToken()) {
+            getUserInfo();
+        } else {
+            document.getElementById("profileContainer").style.display = "none";
+            openLoginModal();
+        }
+    }
+
+    window.onload = function() {
+        checkKakaoLoginStatus();
+        // 30분마다 로그인 상태를 자동으로 갱신합니다.
+        setInterval(checkKakaoLoginStatus, 1800000);
+    }
+    </script>
+</body>
+</html>

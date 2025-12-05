@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>반경 기반 맛집 & 관광지 추천</title>
+
+    <!-- [수정] 1. 소셜 SDK를 지도 SDK보다 먼저 로드합니다. -->
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <!-- [수정] 2. 지도 SDK는 autoload=false로 유지합니다. -->
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=26e11c4d43fec012ee00f28f68e17244&libraries=services&autoload=false"></script>
+
+    <!-- CSS 파일 -->
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <!-- 로그인 모달 -->
+    <div
+      id="loginModal"
+      class="modal"
+      style="display: none"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-content">
+        <button
+          class="modal-close"
+          aria-label="닫기"
+          onclick="closeLoginModal()"
+        >
+          ×
+        </button>
+        <div class="modal-title">로그인</div>
+        <button class="kakao-login-btn" onclick="loginWithKakao()">
+          <span class="kakao-icon">💬</span> 카카오 로그인
+        </button>
+      </div>
+    </div>
+
+    <!-- [2단계] 주소 설정 모달 -->
+    <div
+      id="addressModal"
+      class="modal"
+      style="display: none"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-content">
+        <button
+          class="modal-close"
+          aria-label="닫기"
+          onclick="closeAddressModal()"
+        >
+          ×
+        </button>
+        <div id="addressModalTitle" class="modal-title">새 주소 추가</div>
+        <input
+          type="text"
+          id="addressInput"
+          placeholder="예: 서울특별시 강남구"
+          aria-label="주소 입력"
+        />
+        <button id="saveAddressBtn" onclick="saveAddress()">저장</button>
+      </div>
+    </div>
+
+    <!-- [2-1단계] 최근 검색 위치 모달 -->
+    <div
+      id="recentLocationsModal"
+      class="modal"
+      style="display: none"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-content">
+        <button
+          class="modal-close"
+          aria-label="닫기"
+          onclick="closeRecentLocationsModal()"
+        >
+          ×
+        </button>
+        <div class="modal-title">📍 최근 검색 위치</div>
+
+        <div id="recentLocationsList" class="locations-list">
+          <!-- JS로 목록 생성 -->
+        </div>
+        <p
+          id="noRecentLocationsText"
+          class="no-items-text"
+          style="display: none"
+        >
+          최근 검색 기록이 없습니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- '집' 위치 목록 모달 -->
+    <div
+      id="homeLocationsModal"
+      class="modal"
+      style="display: none"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-content">
+        <button
+          class="modal-close"
+          aria-label="닫기"
+          onclick="closeHomeLocationsModal()"
+        >
+          ×
+        </button>
+        <div class="modal-title">🏠 '집' 위치 목록</div>
+
+        <div id="homeLocationsList" class="locations-list">
+          <!-- JS로 목록 생성 -->
+        </div>
+        <p id="noHomeLocationsText" class="no-items-text" style="display: none">
+          저장된 '집' 위치가 없습니다.
+        </p>
+
+        <button class="add-location-btn" onclick="openAddressModal('home')">
+          ➕ 새 '집' 위치 추가
+        </button>
+      </div>
+    </div>
+
+    <!-- '회사' 위치 목록 모달 -->
+    <div
+      id="companyLocationsModal"
+      class="modal"
+      style="display: none"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-content">
+        <button
+          class="modal-close"
+          aria-label="닫기"
+          onclick="closeCompanyLocationsModal()"
+        >
+          ×
+        </button>
+        <div class="modal-title">🏢 '회사' 위치 목록</div>
+
+        <div id="companyLocationsList" class="locations-list">
+          <!-- JS로 목록 생성 -->
+        </div>
+        <p
+          id="noCompanyLocationsText"
+          class="no-items-text"
+          style="display: none"
+        >
+          저장된 '회사' 위치가 없습니다.
+        </p>
+
+        <button class="add-location-btn" onclick="openAddressModal('work')">
+          ➕ 새 '회사' 위치 추가
+        </button>
+      </div>
+    </div>
+
+    <!-- 커스텀 공유 모달 -->
+    <div
+      id="shareModal"
+      class="modal"
+      style="display: none"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-content">
+        <button
+          class="modal-close"
+          aria-label="닫기"
+          onclick="closeShareModal()"
+        >
+          ×
+        </button>
+        <div class="modal-title">이 장소 공유하기</div>
+        <div class="share-buttons-grid">
+          <button onclick="shareTo('clipboard')">
+            <span>🔗</span>
+            <div>링크 복사</div>
+          </button>
+          <button onclick="shareTo('x')">
+            <span>⚫</span>
+            <div>X (트위터)</div>
+          </button>
+          <button onclick="shareTo('facebook')">
+            <span>🔵</span>
+            <div>Facebook</div>
+          </button>
+          <button onclick="shareTo('whatsapp')">
+            <span>🟢</span>
+            <div>WhatsApp</div>
+          </button>
+          <button onclick="shareTo('email')">
+            <span>📧</span>
+            <div>Email</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 길찾기 이동수단 선택 모달 -->
+    <div
+      id="vehicleSelectModal"
+      class="modal"
+      style="display: none"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-content">
+        <button
+          class="modal-close"
+          aria-label="닫기"
+          onclick="closeVehicleSelectModal()"
+        >
+          ×
+        </button>
+        <div class="modal-title">이동 수단 선택</div>
+        <div class="vehicle-select-grid">
+          <button onclick="executeRoute('car')">
+            <span>🚗</span>
+            <div>자동차</div>
+          </button>
+          <button onclick="executeRoute('walk')">
+            <span>🚶</span>
+            <div>도보</div>
+          </button>
+          <button onclick="executeRoute('pubtrans')">
+            <span>🚌</span>
+            <div>대중교통</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 토스트 알림 div -->
+    <div id="toast"></div>
+
+    <!-- 네비게이션 바 -->
+    <nav class="navbar">
+      <div class="navbar-section navbar-left">
+        <button
+          class="navbar-toggle"
+          aria-label="메뉴"
+          onclick="toggleSidebar()"
+          title="메뉴 열기"
+        >
+          ☰
+        </button>
+      </div>
+      <div class="navbar-section navbar-center">
+        <span class="navbar-logo" tabindex="0">🍽️ MAP PICK</span>
+      </div>
+      <div class="navbar-section navbar-right">
+        <button
+          class="navbar-icon"
+          onclick="goToAlarmPage()"
+          title="알림"
+          aria-label="알림"
+        >
+          🔔
+        </button>
+        <button
+          class="navbar-icon"
+          onclick="goToProfilePage()"
+          title="내 프로필"
+          aria-label="프로필"
+        >
+          👤
+        </button>
+      </div>
+    </nav>
+
+    <!-- ▼▼▼ [수정] 즐겨찾기 버튼 복원 ▼▼▼ -->
+    <div id="sidebarMenu" style="display: none">
+      <button onclick="showFavorites()">★ 즐겨찾기</button>
+      <button onclick="goToMyReviewsPage()">📝 리뷰</button>
+      <button onclick="shareApp()">🔗 앱 공유하기</button>
+      <button
+        onclick="openLoginModal()"
+        id="sidebarLoginBtn"
+        style="display: none"
+      >
+        → 로그인
+      </button>
+      <button
+        onclick="kakaoLogout()"
+        id="sidebarLogoutBtn"
+        style="display: none"
+      >
+        ⎋ 로그아웃
+      </button>
+    </div>
+    <!-- ▲▲▲ [수정] 여기까지 ▲▲▲ -->
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container">
+      <h2>맛집 & 관광지 추천</h2>
+      <div id="kakaoUserInfo"></div>
+      <div class="search-container">
+        <input
+          type="text"
+          id="location"
+          placeholder="위치를 입력하세요"
+          aria-label="검색 위치 입력"
+        />
+        <button onclick="searchPlaces()" aria-label="검색">검색</button>
+        <button onclick="getCurrentLocation()" aria-label="현재 위치로 검색">
+          현재 위치
+        </button>
+      </div>
+
+      <!-- [2단계] 빠른 검색 버튼 -->
+      <div class="quick-search-container">
+        <button id="quickHomeBtn" onclick="quickSearch('home')">🏠 집</button>
+        <button id="quickWorkBtn" onclick="quickSearch('work')">🏢 회사</button>
+        <button id="quickRecentBtn" onclick="quickSearch('recent')">
+          📍 최근위치
+        </button>
+      </div>
+
+      <label for="radiusSlider">검색 반경:</label>
+      <input
+        type="range"
+        id="radiusSlider"
+        min="100"
+        max="5000"
+        step="100"
+        value="100"
+        oninput="updateRadius()"
+      />
+      <span id="radiusValue">100m</span>
+
+      <!-- [수정] 정렬 드롭다운 제거됨 -->
+
+      <div class="category-container">
+        <label for="categorySelect">카테고리:</label>
+        <select id="categorySelect">
+          <option value="all">전체</option>
+          <option value="FD6">음식점</option>
+          <option value="CE7">카페</option>
+          <option value="FD1">패스트푸드</option>
+          <option value="AG2">바</option>
+          <option value="AT4">관광지</option>
+          <option value="AD5">호텔</option>
+          <option value="CT1">문화시설</option>
+        </select>
+      </div>
+      <div class="keyword-container">
+        <label for="keywordInput">키워드:</label>
+        <input
+          type="text"
+          id="keywordInput"
+          placeholder="(선택) 특정 키워드 입력"
+          aria-label="검색 키워드 입력"
+        />
+      </div>
+
+      <div id="loadingSpinner" style="display: none">
+        <div class="spinner"></div>
+        <span>로딩 중...</span>
+      </div>
+      <div id="map" tabindex="0" aria-label="지도"></div>
+      <div id="results"></div>
+    </div>
+
+    <!-- =============================================== -->
+    <!-- JAVASCRIPT 시작 -->
+    <!-- =============================================== -->
+    <script>
+      // ==== 햄버거 메뉴 ====
+      let sidebarActive = false;
+      function toggleSidebar() {
+        sidebarActive = !sidebarActive;
+        document.getElementById("sidebarMenu").style.display = sidebarActive
+          ? "flex"
+          : "none";
+        if (sidebarActive) positionSidebar();
+        showUserSidebarMenu();
+      }
+      function closeSidebar() {
+        sidebarActive = false;
+        document.getElementById("sidebarMenu").style.display = "none";
+      }
+      function positionSidebar() {
+        const sidebar = document.getElementById("sidebarMenu");
+        const btn = document.querySelector(".navbar-toggle");
+        const rect = btn.getBoundingClientRect();
+        sidebar.style.position = "absolute";
+        sidebar.style.left = window.scrollX + rect.left + "px";
+        sidebar.style.top = window.scrollY + rect.bottom + "px";
+      }
+      window.addEventListener("resize", () => {
+        if (sidebarActive) positionSidebar();
+      });
+
+      // ==== 접근성 & 모달 공통 ====
+      window.onclick = function (event) {
+        const loginModal = document.getElementById("loginModal");
+        const shareModal = document.getElementById("shareModal");
+        const addressModal = document.getElementById("addressModal");
+        const recentLocationsModal = document.getElementById(
+          "recentLocationsModal"
+        );
+        const homeLocationsModal =
+          document.getElementById("homeLocationsModal");
+        const companyLocationsModal = document.getElementById(
+          "companyLocationsModal"
+        );
+        const vehicleSelectModal =
+          document.getElementById("vehicleSelectModal");
+
+        if (loginModal.style.display === "flex" && event.target === loginModal)
+          closeLoginModal();
+
+        if (shareModal.style.display === "flex" && event.target === shareModal)
+          closeShareModal();
+
+        if (
+          addressModal.style.display === "flex" &&
+          event.target === addressModal
+        )
+          closeAddressModal();
+
+        if (
+          recentLocationsModal.style.display === "flex" &&
+          event.target === recentLocationsModal
+        )
+          closeRecentLocationsModal();
+
+        if (
+          homeLocationsModal.style.display === "flex" &&
+          event.target === homeLocationsModal
+        )
+          closeHomeLocationsModal();
+
+        if (
+          companyLocationsModal.style.display === "flex" &&
+          event.target === companyLocationsModal
+        )
+          closeCompanyLocationsModal();
+
+        if (
+          vehicleSelectModal.style.display === "flex" &&
+          event.target === vehicleSelectModal
+        )
+          closeVehicleSelectModal();
+
+        if (
+          sidebarActive &&
+          !event.target.closest("#sidebarMenu") &&
+          !event.target.closest(".navbar-toggle")
+        )
+          closeSidebar();
+      };
+      window.onkeydown = function (event) {
+        if (event.key === "Escape") {
+          closeLoginModal();
+          closeShareModal();
+          closeAddressModal();
+          closeRecentLocationsModal();
+          closeHomeLocationsModal();
+          closeCompanyLocationsModal();
+          closeVehicleSelectModal();
+          closeSidebar();
+        }
+      };
+
+      // ==== 카카오 로그인 & 유저정보 ====
+      let kakaoUser = null;
+      let favorites = JSON.parse(localStorage.getItem("favorites") || "[]"); // [수정] 즐겨찾기 복원
+      let lastSearchedPlaces = [];
+
+      function showUserInfo() {
+        const userDiv = document.getElementById("kakaoUserInfo");
+        const sLoginBtn = document.getElementById("sidebarLoginBtn");
+        const sLogoutBtn = document.getElementById("sidebarLogoutBtn");
+        if (kakaoUser && kakaoUser.id) {
+          const serviceNickname = localStorage.getItem(
+            "serviceNickname_" + kakaoUser.id
+          );
+          const displayName =
+            serviceNickname ||
+            (kakaoUser.kakao_account &&
+              kakaoUser.kakao_account.profile &&
+              kakaoUser.kakao_account.profile.nickname) ||
+            "사용자";
+          userDiv.innerHTML = `<b>안녕하세요, ${displayName}님!</b>`;
+          if (sLoginBtn) sLoginBtn.style.display = "none";
+          if (sLogoutBtn) sLogoutBtn.style.display = "block";
+        } else {
+          userDiv.innerHTML = "";
+          if (sLoginBtn) sLoginBtn.style.display = "block";
+          if (sLogoutBtn) sLogoutBtn.style.display = "none";
+        }
+      }
+      function showUserSidebarMenu() {
+        showUserInfo();
+      }
+      function loginWithKakao() {
+        showLoading(true, "카카오 로그인중...");
+        Kakao.Auth.login({
+          success: function (authObj) {
+            Kakao.Auth.setAccessToken(authObj.access_token);
+            getUserInfo();
+            closeLoginModal();
+          },
+          fail: function (err) {
+            showToast("카카오 로그인에 실패했습니다. 다시 시도해주세요.", true);
+            console.error("Kakao login failed:", err);
+            showLoading(false);
+          },
+        });
+      }
+      function getUserInfo() {
+        Kakao.API.request({
+          url: "/v2/user/me",
+          success: function (res) {
+            kakaoUser = res;
+            localStorage.setItem("kakao_user", JSON.stringify(res));
+            showUserInfo();
+            loadFavoritesForUser(); // [수정] 즐겨찾기 복원
+            showLoading(false);
+          },
+          fail: function (error) {
+            console.error("사용자 정보 요청 실패", error);
+            kakaoUser = null;
+            showUserInfo();
+            loadFavoritesForUser(); // [수정] 즐겨찾기 복원
+            showLoading(false);
+          },
+        });
+      }
+      function kakaoLogout() {
+        if (!Kakao.Auth.getAccessToken()) {
+          console.log("Not logged in.");
+          return;
+        }
+        Kakao.Auth.logout(function () {
+          kakaoUser = null;
+          localStorage.removeItem("kakao_user");
+          showUserInfo();
+          favorites = JSON.parse(localStorage.getItem("favorites") || "[]"); // [수정] 즐겨찾기 복원
+          showPlacesOnMap(lastSearchedPlaces);
+        });
+      }
+      function checkKakaoLoginStatus() {
+        if (Kakao.Auth.getAccessToken()) {
+          getUserInfo();
+        } else {
+          showUserInfo();
+        }
+      }
+
+      // ▼▼▼ [수정] 즐겨찾기 함수 복원 ▼▼▼
+      function loadFavoritesForUser() {
+        const key =
+          kakaoUser && kakaoUser.id ? "favorites_" + kakaoUser.id : "favorites";
+        favorites = JSON.parse(localStorage.getItem(key) || "[]");
+        if (mapInitialized) showPlacesOnMap(lastSearchedPlaces);
+      }
+      function saveFavoritesForUser() {
+        const key =
+          kakaoUser && kakaoUser.id ? "favorites_" + kakaoUser.id : "favorites";
+        localStorage.setItem(key, JSON.stringify(favorites));
+      }
+      // ▲▲▲ [수정] 여기까지 ▲▲▲
+
+      // ==== 지도/검색 ====
+      let map,
+        ps,
+        mapInitialized = false,
+        currentMarkers = [];
+      let currentRoute = null,
+        currentPosition = null,
+        selectedItem = null,
+        searchCircle = null;
+      let currentAddressType = null;
+
+      let routeInfo = {
+        fromName: "",
+        fromLat: "",
+        fromLng: "",
+        toName: "",
+        toLat: "",
+        toLng: "",
+      };
+
+      function initializeMap() {
+        if (mapInitialized) return;
+        try {
+          const mapContainer = document.getElementById("map");
+          const mapOption = {
+            center: new kakao.maps.LatLng(37.5665, 126.978),
+            level: 5,
+          };
+          map = new kakao.maps.Map(mapContainer, mapOption);
+          ps = new kakao.maps.services.Places();
+          mapInitialized = true;
+          loadFavoritesForUser(); // [수정] 즐겨찾기 복원
+        } catch (error) {
+          console.error("지도 초기화 중 오류 발생:", error);
+          showToast(
+            "지도 로딩에 실패했습니다. 페이지를 새로고침해주세요.",
+            true
+          );
+        }
+      }
+      function showLoading(show, msg = "로딩 중...") {
+        const spinner = document.getElementById("loadingSpinner");
+        if (spinner) {
+          spinner.style.display = show ? "block" : "none";
+          const span = spinner.querySelector("span");
+          if (span) span.textContent = msg;
+        }
+      }
+      function searchPlaces() {
+        const location = document.getElementById("location").value.trim();
+        if (!location) {
+          showToast("위치를 입력하세요.", true);
+          return;
+        }
+
+        addRecentLocation(location);
+
+        showLoading(true, "지도 위치 찾는 중...");
+        ps.keywordSearch(location, function (data, status) {
+          if (status === kakao.maps.services.Status.OK) {
+            const place = data[0];
+            const lat = parseFloat(place.y);
+            const lon = parseFloat(place.x);
+            currentPosition = new kakao.maps.LatLng(lat, lon);
+            map.setCenter(currentPosition);
+            removeSearchMarker();
+            addSearchMarker(currentPosition, "검색 위치: " + place.place_name);
+            showCircleRadius(
+              lat,
+              lon,
+              document.getElementById("radiusSlider").value
+            );
+            searchNearby(lat, lon);
+          } else {
+            showPlacesOnMap([]);
+            showLoading(false);
+            showToast("장소를 찾을 수 없습니다.", true);
+          }
+        });
+      }
+      function getCurrentLocation() {
+        if (!navigator.geolocation) {
+          showToast("이 브라우저에서는 위치 정보를 지원하지 않습니다.", true);
+          return;
+        }
+        showLoading(true, "현재 위치 확인 중...");
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            currentPosition = new kakao.maps.LatLng(lat, lon);
+            map.setCenter(currentPosition);
+            removeSearchMarker();
+            addSearchMarker(currentPosition, "현재 위치");
+            showCircleRadius(
+              lat,
+              lon,
+              document.getElementById("radiusSlider").value
+            );
+            searchNearby(lat, lon);
+
+            const geocoder = new kakao.maps.services.Geocoder();
+            geocoder.coord2Address(lon, lat, (result, status) => {
+              if (status === kakao.maps.services.Status.OK) {
+                const address =
+                  result[0]?.address?.address_name ||
+                  `현재위치(${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+                addRecentLocation(address);
+              }
+            });
+          },
+          function (error) {
+            showLoading(false);
+            let msg = "알 수 없는 위치 오류 발생";
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                msg = "위치 권한이 필요합니다.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                msg = "위치 정보를 받을 수 없습니다.";
+                break;
+              case error.TIMEOUT:
+                msg = "위치 정보 요청이 시간초과되었습니다.";
+                break;
+            }
+            showToast(msg, true);
+          }
+        );
+      }
+
+      let searchMarker = null;
+      function addSearchMarker(position, title) {
+        searchMarker = new kakao.maps.Marker({
+          map: map,
+          position: position,
+          title: title,
+        });
+      }
+
+      function removeSearchMarker() {
+        if (searchMarker) {
+          searchMarker.setMap(null);
+          searchMarker = null;
+        }
+      }
+
+      // [수정] 4단계 백엔드 로직 제거
+      function searchNearby(lat, lon) {
+        const radius = document.getElementById("radiusSlider").value;
+        const category = document.getElementById("categorySelect").value;
+        const keyword = document.getElementById("keywordInput").value.trim();
+        // const sortOption = document.getElementById("sortSelect").value; // 정렬 UI 제거됨
+
+        showLoading(true, "주변 장소 검색 중...");
+
+        const searchCallback = function (data, status, pagination) {
+          if (status === kakao.maps.services.Status.OK) {
+            const filtered = data.filter((place) => {
+              const dist =
+                getDistanceFromLatLon(
+                  lat,
+                  lon,
+                  parseFloat(place.y),
+                  parseFloat(place.x)
+                ) * 1000;
+              return dist <= radius;
+            });
+
+            lastSearchedPlaces = filtered;
+
+            // [수정] '거리순'으로 즉시 정렬하여 표시
+            sortAndDisplayResults();
+          } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+            lastSearchedPlaces = [];
+            showPlacesOnMap([]);
+          } else {
+            lastSearchedPlaces = [];
+            showPlacesOnMap([]);
+            console.error("장소 검색 오류:", status);
+          }
+          showLoading(false);
+        };
+
+        const searchOptions = {
+          location: new kakao.maps.LatLng(lat, lon),
+          radius: parseInt(radius, 10),
+          // [수정] 정렬을 '거리순'으로 고정
+          sort: kakao.maps.services.SortBy.DISTANCE,
+        };
+
+        if (keyword) {
+          ps.keywordSearch(keyword, searchCallback, searchOptions);
+        } else if (category === "all") {
+          ps.keywordSearch("", searchCallback, searchOptions);
+        } else {
+          ps.categorySearch(category, searchCallback, searchOptions);
+        }
+      }
+
+      // [수정] 4단계 백엔드 로직 제거 (거리순 정렬만 남김)
+      function sortAndDisplayResults() {
+        // [수정] sortOption 제거, 무조건 거리순 정렬
+        let sortedPlaces = [...lastSearchedPlaces];
+
+        if (currentPosition) {
+          sortedPlaces.sort((a, b) => {
+            const distA = getDistanceFromLatLon(
+              currentPosition.getLat(),
+              currentPosition.getLng(),
+              a.y,
+              a.x
+            );
+            const distB = getDistanceFromLatLon(
+              currentPosition.getLat(),
+              currentPosition.getLng(),
+              b.y,
+              b.x
+            );
+            return distA - distB;
+          });
+        }
+
+        showPlacesOnMap(sortedPlaces);
+      }
+
+      function updateRadius() {
+        const radius = document.getElementById("radiusSlider").value;
+        document.getElementById("radiusValue").innerText = radius + "m";
+        if (currentPosition) {
+          // 슬라이더를 움직이면 항상 재검색
+          searchNearby(currentPosition.getLat(), currentPosition.getLng());
+        }
+      }
+
+      function showCircleRadius(lat, lon, radius) {
+        if (searchCircle) searchCircle.setMap(null);
+        searchCircle = new kakao.maps.Circle({
+          center: new kakao.maps.LatLng(lat, lon),
+          radius: parseInt(radius),
+          strokeWeight: 2,
+          strokeColor: "#007BFF",
+          strokeOpacity: 0.8,
+          fillColor: "#007BFF",
+          fillOpacity: 0.15,
+          map: map,
+        });
+        if (!selectedItem) map.setBounds(searchCircle.getBounds());
+      }
+
+      // ▼▼▼ [수정] 즐겨찾기 버튼 로직 복원 ▼▼▼
+      function showPlacesOnMap(places) {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "";
+        removeResultMarkers();
+
+        if (places.length === 0) {
+          resultsDiv.innerHTML =
+            "<p style='color:#a00; padding-left: 5px;'>반경 내 장소가 없습니다 😥</p>";
+          return;
+        }
+
+        const countInfo = document.createElement("p");
+        countInfo.innerHTML = `검색 결과: <b>${places.length}</b> 개`;
+        resultsDiv.appendChild(countInfo);
+
+        places.forEach((place) => {
+          if (!place.y || !place.x) return;
+
+          const name = place.place_name || "이름 없음";
+          place.uniqueId = place.id || `${place.y}_${place.x}`;
+
+          const placePosition = new kakao.maps.LatLng(place.y, place.x);
+          const marker = new kakao.maps.Marker({
+            map: map,
+            position: placePosition,
+            title: name,
+          });
+          const infowindow = new kakao.maps.InfoWindow({
+            content: `<div style="padding:5px; font-size:12px; white-space:nowrap;">${name}</div>`,
+            disableAutoPan: true,
+          });
+
+          kakao.maps.event.addListener(marker, "click", function () {
+            if (infowindow.getMap()) {
+              infowindow.close();
+            } else {
+              infowindow.open(map, marker);
+            }
+          });
+
+          currentMarkers.push({ marker, infowindow });
+
+          const item = document.createElement("div");
+          item.className = "result-item";
+          item.tabIndex = 0;
+
+          // [수정] 리뷰/별점 표시 영역 제거됨
+
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "result-item-name";
+          nameSpan.textContent = name;
+          item.appendChild(nameSpan);
+
+          if (place.category_name) {
+            const categorySpan = document.createElement("span");
+            categorySpan.className = "result-item-category";
+            categorySpan.textContent =
+              " (" + place.category_name.split(">").pop().trim() + ")";
+            item.appendChild(categorySpan);
+          }
+          item.appendChild(document.createElement("br"));
+
+          if (place.road_address_name) {
+            const addrSpan = document.createElement("span");
+            addrSpan.className = "result-item-address";
+            addrSpan.textContent = "🏠 " + place.road_address_name;
+            item.appendChild(addrSpan);
+            item.appendChild(document.createElement("br"));
+          }
+
+          const contactDiv = document.createElement("div");
+          contactDiv.className = "result-item-contact";
+          if (place.phone) {
+            const telSpan = document.createElement("span");
+            telSpan.textContent = "☎ " + place.phone;
+            contactDiv.appendChild(telSpan);
+          }
+
+          if (place.phone && place.place_url) {
+            contactDiv.appendChild(document.createElement("br"));
+          }
+
+          if (place.place_url) {
+            const link = document.createElement("a");
+            link.href = place.place_url;
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.textContent = "상세보기";
+            contactDiv.appendChild(link);
+          }
+          if (contactDiv.hasChildNodes()) {
+            item.appendChild(contactDiv);
+          }
+
+          const buttonDiv = document.createElement("div");
+          buttonDiv.className = "result-item-actions";
+
+          // [수정] 즐겨찾기 버튼 복원
+          const favBtn = document.createElement("button");
+          favBtn.textContent = "★";
+          favBtn.title = "즐겨찾기";
+          favBtn.setAttribute("aria-label", "즐겨찾기");
+          favBtn.className =
+            "fav-btn " +
+            (favorites.find((fav) => fav.uniqueId === place.uniqueId)
+              ? "gold"
+              : "gray"); // uniqueId로 비교
+          favBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleFavorite(place);
+
+            // 버튼 클래스 즉시 토글
+            if (favBtn.classList.contains("gray")) {
+              favBtn.classList.remove("gray");
+              favBtn.classList.add("gold");
+            } else {
+              favBtn.classList.remove("gold");
+              favBtn.classList.add("gray");
+            }
+          };
+          buttonDiv.appendChild(favBtn);
+
+          if (place.place_url) {
+            const shareBtn = document.createElement("button");
+            shareBtn.textContent = "📤 공유";
+            shareBtn.title = "장소 정보 공유하기";
+            shareBtn.setAttribute("aria-label", "장소 정보 공유하기");
+
+            shareBtn.onclick = (e) => {
+              e.stopPropagation();
+              const shareUrl = place.place_url;
+              const shareText = `${place.place_name}의 정보입니다.`;
+              const shareTitle = place.place_name;
+
+              if (navigator.share) {
+                navigator
+                  .share({
+                    title: shareTitle,
+                    text: shareText,
+                    url: shareUrl,
+                  })
+                  .catch(console.error);
+              } else {
+                openShareModal(shareUrl, shareText, shareTitle);
+              }
+            };
+            buttonDiv.appendChild(shareBtn);
+          }
+
+          const routeBtn = document.createElement("button");
+          routeBtn.textContent = "길찾기";
+          routeBtn.title = "길찾기";
+          routeBtn.onclick = (e) => {
+            e.stopPropagation();
+            const srcLat = currentPosition ? currentPosition.getLat() : "";
+            const srcLng = currentPosition ? currentPosition.getLng() : "";
+
+            openVehicleSelectModal(
+              place.place_name,
+              place.y,
+              place.x,
+              srcLat && srcLng ? "내 위치" : "",
+              srcLat,
+              srcLng
+            );
+          };
+          buttonDiv.appendChild(routeBtn);
+
+          const reviewBtn = document.createElement("button");
+          reviewBtn.textContent = "리뷰";
+          reviewBtn.title = "리뷰 페이지 이동";
+          reviewBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (!kakaoUser || !kakaoUser.id) {
+              showToast("리뷰를 작성하려면 로그인이 필요합니다.", true);
+              openLoginModal();
+              return;
+            }
+            const serviceNickname = localStorage.getItem(
+              "serviceNickname_" + kakaoUser.id
+            );
+            const displayName =
+              serviceNickname ||
+              (kakaoUser.kakao_account &&
+                kakaoUser.kakao_account.profile &&
+                kakaoUser.kakao_account.profile.nickname) ||
+              "사용자";
+
+            window.location.href = `/review?place_id=${encodeURIComponent(
+              place.uniqueId
+            )}&place_name=${encodeURIComponent(name)}&user_id=${
+              kakaoUser.id
+            }&username=${encodeURIComponent(displayName)}`;
+          };
+          buttonDiv.appendChild(reviewBtn);
+
+          item.appendChild(buttonDiv);
+
+          item.onclick = () => {
+            selectResultItem(marker, infowindow, item, place);
+          };
+          item.onkeypress = (e) => {
+            if (e.key === "Enter" || e.key === " ") item.onclick();
+          };
+          resultsDiv.appendChild(item);
+        });
+      }
+      // ▲▲▲ [수정] 여기까지 ▲▲▲
+
+      function removeResultMarkers() {
+        currentMarkers.forEach(({ marker, infowindow }) => {
+          if (marker) marker.setMap(null);
+          if (infowindow) infowindow.close();
+        });
+        currentMarkers = [];
+      }
+      function selectResultItem(marker, infowindow, item, place) {
+        const name = place.place_name || "";
+        const placeLatLng = marker.getPosition();
+
+        let content = `<div style="padding:5px; font-size:12px; white-space:nowrap;">${name}</div>`;
+        if (currentPosition) {
+          const distance = getDistanceFromLatLon(
+            currentPosition.getLat(),
+            currentPosition.getLng(),
+            place.y,
+            place.x
+          );
+          const walkingTime = Math.round((distance / 4.8) * 60);
+          content += `<br>거리: ${(distance * 1000).toFixed(
+            0
+          )}m, 도보 약 ${walkingTime}분`;
+        }
+        content += `</div>`;
+        infowindow.setContent(content);
+        infowindow.open(map, marker);
+
+        if (selectedItem) selectedItem.classList.remove("selected");
+        item.classList.add("selected");
+        selectedItem = item;
+
+        if (currentRoute) currentRoute.setMap(null);
+        if (currentPosition) {
+          currentRoute = new kakao.maps.Polyline({
+            map: map,
+            path: [currentPosition, placeLatLng],
+            strokeWeight: 3,
+            strokeColor: "#db4040",
+            strokeOpacity: 0.8,
+            strokeStyle: "solid",
+          });
+          const bounds = new kakao.maps.LatLngBounds();
+          bounds.extend(currentPosition);
+          bounds.extend(placeLatLng);
+          map.setBounds(bounds, 100);
+        } else {
+          map.setCenter(placeLatLng);
+          map.setLevel(4);
+        }
+        item.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      // ==== [수정] 즐겨찾기 함수 복원 ====
+      function toggleFavorite(place) {
+        place.uniqueId = place.id || `${place.y}_${place.x}`;
+        const idx = favorites.findIndex(
+          (fav) => fav.uniqueId === place.uniqueId
+        );
+        if (idx === -1) {
+          favorites.push(place);
+        } else {
+          favorites.splice(idx, 1);
+        }
+        saveFavoritesForUser();
+
+        // [수정] 현재 목록에서 즐겨찾기 상태를 즉시 갱신 (showPlacesOnMap 호출 제거)
+        // (버튼 자체의 클래스 토글은 showPlacesOnMap의 onclick 핸들러 내부에서 처리)
+      }
+
+      function showFavorites() {
+        showLoading(true, "즐겨찾기 목록 로딩 중...");
+        removeSearchMarker();
+        if (searchCircle) searchCircle.setMap(null);
+        currentPosition = null;
+
+        lastSearchedPlaces = favorites;
+        sortAndDisplayResults(); // 즐겨찾기 목록도 거리순 정렬 (기준 위치가 없으므로 정렬 안 됨)
+        showLoading(false);
+
+        closeSidebar();
+      }
+      // ▲▲▲ [수정] 여기까지 ▲▲▲
+
+      // ==== 유틸리티 & 페이지 이동 ====
+
+      function openVehicleSelectModal(
+        destName,
+        destLat,
+        destLng,
+        srcName,
+        srcLat,
+        srcLng
+      ) {
+        routeInfo = {
+          fromName: srcName,
+          fromLat: srcLat,
+          fromLng: srcLng,
+          toName: destName,
+          toLat: destLat,
+          toLng: destLng,
+        };
+        document.getElementById("vehicleSelectModal").style.display = "flex";
+      }
+
+      function closeVehicleSelectModal() {
+        document.getElementById("vehicleSelectModal").style.display = "none";
+      }
+
+      function executeRoute(vehicle) {
+        if (
+          !routeInfo.fromLat ||
+          !routeInfo.fromLng ||
+          !routeInfo.toLat ||
+          !routeInfo.toLng
+        ) {
+          showToast("출발지 또는 도착지 정보가 부족합니다.", true);
+          return;
+        }
+
+        const url =
+          `https://map.kakao.com/link/by/${vehicle}/` +
+          `${encodeURIComponent(routeInfo.fromName)},${routeInfo.fromLat},${
+            routeInfo.fromLng
+          }/` +
+          `${encodeURIComponent(routeInfo.toName)},${routeInfo.toLat},${
+            routeInfo.toLng
+          }`;
+
+        window.open(url, "_blank");
+        closeVehicleSelectModal();
+      }
+
+      function getDistanceFromLatLon(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = deg2rad(lat2 - lat1);
+        const dLon = deg2rad(lon2 - lon1);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(deg2rad(lat1)) *
+            Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+      function deg2rad(deg) {
+        return deg * (Math.PI / 180);
+      }
+      function goToAlarmPage() {
+        window.location.href = "/alarm";
+      }
+      function goToProfilePage() {
+        if (kakaoUser && kakaoUser.id) window.location.href = "/profile";
+        else openLoginModal();
+      }
+      function goToMyReviewsPage() {
+        if (kakaoUser && kakaoUser.id) window.location.href = "/my-reviews";
+        else {
+          showToast("로그인이 필요합니다.", true);
+          openLoginModal();
+        }
+      }
+      function openLoginModal() {
+        document.getElementById("loginModal").style.display = "flex";
+        closeSidebar();
+      }
+      function closeLoginModal() {
+        document.getElementById("loginModal").style.display = "none";
+      }
+
+      // ==== 토스트 알림 함수 ====
+      let toastTimeout = null;
+      function showToast(message, isError = false) {
+        const toast = document.getElementById("toast");
+        if (!toast) return;
+
+        if (toastTimeout) {
+          clearTimeout(toastTimeout);
+        }
+
+        toast.textContent = message;
+
+        if (isError) {
+          toast.classList.add("error");
+        } else {
+          toast.classList.remove("error");
+        }
+
+        toast.classList.add("show");
+
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove("show");
+          toastTimeout = null;
+        }, 3000);
+      }
+
+      // ==== 공유 모달 관련 함수 ====
+
+      let currentShareUrl = "";
+      let currentShareText = "";
+      let currentShareTitle = "";
+
+      function openShareModal(url, text, title) {
+        currentShareUrl = url;
+        currentShareText = text;
+        currentShareTitle = title;
+        document.getElementById("shareModal").style.display = "flex";
+      }
+
+      function closeShareModal() {
+        document.getElementById("shareModal").style.display = "none";
+      }
+
+      function shareTo(platform) {
+        const url = encodeURIComponent(currentShareUrl);
+        const text = encodeURIComponent(currentShareText);
+        const title = encodeURIComponent(currentShareTitle);
+        let shareLink = "";
+
+        switch (platform) {
+          case "x":
+            shareLink = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+            break;
+          case "facebook":
+            shareLink = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            break;
+          case "whatsapp":
+            shareLink = `https://api.whatsapp.com/send?text=${text}%20${url}`;
+            break;
+          case "email":
+            shareLink = `mailto:?subject=${title}&body=${text}%0A${currentShareUrl}`;
+            break;
+          case "clipboard":
+            navigator.clipboard
+              .writeText(currentShareUrl)
+              .then(() => {
+                showToast("✅ 링크가 클립보드에 복사되었습니다.");
+              })
+              .catch((err) => {
+                console.error("Clipboard copy failed:", err);
+                showToast("링크 복사에 실패했습니다.", true);
+              });
+            break;
+        }
+
+        if (shareLink) {
+          window.open(shareLink, "_blank", "noopener,noreferrer");
+        }
+
+        closeShareModal();
+      }
+
+      // 사이드바 '앱 공유하기' 함수
+      function shareApp() {
+        const appUrl = window.location.origin || window.location.href;
+        if (navigator.share) {
+          navigator
+            .share({
+              title: "MAP PICK - 반경 기반 맛집 & 관광지 추천",
+              text: "내 주변 맛집과 관광지를 찾아보세요!",
+              url: appUrl,
+            })
+            .catch(console.error);
+        } else {
+          navigator.clipboard
+            .writeText(appUrl)
+            .then(() => {
+              showToast("✅ 앱 URL이 클립보드에 복사되었습니다.");
+            })
+            .catch((err) => {
+              console.error("App URL copy failed:", err);
+              showToast("URL 복사에 실패했습니다.", true);
+            });
+        }
+        closeSidebar();
+      }
+
+      // ==== [수정] '집', '회사' 목록 관리 함수들 ====
+
+      function openAddressModal(type) {
+        if (
+          document.getElementById("homeLocationsModal").style.display === "flex"
+        ) {
+          closeHomeLocationsModal();
+        }
+        if (
+          document.getElementById("companyLocationsModal").style.display ===
+          "flex"
+        ) {
+          closeCompanyLocationsModal();
+        }
+
+        currentAddressType = type;
+        const title =
+          type === "home" ? "🏠 새 '집' 주소 추가" : "🏢 새 '회사' 주소 추가";
+        document.getElementById("addressModalTitle").textContent = title;
+        document.getElementById("addressInput").value = "";
+        document.getElementById("addressModal").style.display = "flex";
+        document.getElementById("addressInput").focus();
+      }
+
+      function closeAddressModal() {
+        document.getElementById("addressModal").style.display = "none";
+        currentAddressType = null;
+      }
+
+      function saveAddress() {
+        const addressInput = document.getElementById("addressInput");
+        const address = addressInput.value.trim();
+
+        if (!address) {
+          showToast("주소를 입력해주세요.", true);
+          return;
+        }
+
+        if (currentAddressType) {
+          const storageKey = `${currentAddressType}_locations`;
+          try {
+            let locations = JSON.parse(
+              localStorage.getItem(storageKey) || "[]"
+            );
+
+            if (locations.includes(address)) {
+              showToast("이미 등록된 주소입니다.", true);
+              return;
+            }
+            locations.unshift(address);
+            if (locations.length > 5) {
+              locations = locations.slice(0, 5);
+            }
+            localStorage.setItem(storageKey, JSON.stringify(locations));
+
+            const title = currentAddressType === "home" ? "'집'" : "'회사'";
+            showToast(`✅ ${title} 주소가 추가되었습니다.`);
+
+            closeAddressModal();
+
+            if (currentAddressType === "home") {
+              openHomeLocationsModal();
+            } else if (currentAddressType === "work") {
+              openCompanyLocationsModal();
+            }
+          } catch (e) {
+            console.error("localStorage 저장 실패:", e);
+            showToast("주소 저장에 실패했습니다.", true);
+          }
+        }
+      }
+
+      // --- '집' 목록 함수 ---
+      function openHomeLocationsModal() {
+        const listDiv = document.getElementById("homeLocationsList");
+        const noItemsText = document.getElementById("noHomeLocationsText");
+        populateLocationList(
+          listDiv,
+          noItemsText,
+          "home_locations",
+          selectHomeLocation,
+          deleteHomeLocation
+        );
+        document.getElementById("homeLocationsModal").style.display = "flex";
+      }
+
+      function closeHomeLocationsModal() {
+        document.getElementById("homeLocationsModal").style.display = "none";
+      }
+
+      function selectHomeLocation(location) {
+        document.getElementById("location").value = location;
+        closeHomeLocationsModal();
+        searchPlaces();
+      }
+
+      function deleteHomeLocation(locationToDelete, event) {
+        event.stopPropagation();
+        deleteLocationFromList(
+          "home_locations",
+          locationToDelete,
+          openHomeLocationsModal
+        );
+      }
+
+      // --- '회사' 목록 함수 ---
+      function openCompanyLocationsModal() {
+        const listDiv = document.getElementById("companyLocationsList");
+        const noItemsText = document.getElementById("noCompanyLocationsText");
+        populateLocationList(
+          listDiv,
+          noItemsText,
+          "work_locations",
+          selectCompanyLocation,
+          deleteCompanyLocation
+        );
+        document.getElementById("companyLocationsModal").style.display = "flex";
+      }
+
+      function closeCompanyLocationsModal() {
+        document.getElementById("companyLocationsModal").style.display = "none";
+      }
+
+      function selectCompanyLocation(location) {
+        document.getElementById("location").value = location;
+        closeCompanyLocationsModal();
+        searchPlaces();
+      }
+
+      function deleteCompanyLocation(locationToDelete, event) {
+        event.stopPropagation();
+        deleteLocationFromList(
+          "work_locations",
+          locationToDelete,
+          openCompanyLocationsModal
+        );
+      }
+
+      // --- '최근' 목록 함수 ---
+      function addRecentLocation(location) {
+        if (!location) return;
+        try {
+          let recent = JSON.parse(
+            localStorage.getItem("recent_locations") || "[]"
+          );
+          recent = recent.filter((item) => item !== location);
+          recent.unshift(location);
+          if (recent.length > 5) {
+            recent = recent.slice(0, 5);
+          }
+          localStorage.setItem("recent_locations", JSON.stringify(recent));
+        } catch (e) {
+          console.warn("최근 위치 저장 실패:", e);
+        }
+      }
+
+      function openRecentLocationsModal() {
+        const listDiv = document.getElementById("recentLocationsList");
+        const noItemsText = document.getElementById("noRecentLocationsText");
+        populateLocationList(
+          listDiv,
+          noItemsText,
+          "recent_locations",
+          selectRecentLocation,
+          deleteRecentLocation
+        );
+        document.getElementById("recentLocationsModal").style.display = "flex";
+      }
+
+      function closeRecentLocationsModal() {
+        document.getElementById("recentLocationsModal").style.display = "none";
+      }
+
+      function selectRecentLocation(location) {
+        document.getElementById("location").value = location;
+        closeRecentLocationsModal();
+        searchPlaces();
+      }
+
+      function deleteRecentLocation(locationToDelete, event) {
+        event.stopPropagation();
+        deleteLocationFromList(
+          "recent_locations",
+          locationToDelete,
+          openRecentLocationsModal
+        );
+      }
+
+      // [신규] 공통 헬퍼 함수들
+
+      function populateLocationList(
+        listDiv,
+        noItemsText,
+        storageKey,
+        selectFn,
+        deleteFn
+      ) {
+        listDiv.innerHTML = "";
+        let locations = [];
+        try {
+          locations = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        } catch (e) {
+          console.error(`${storageKey} 불러오기 실패:`, e);
+        }
+
+        if (locations.length === 0) {
+          if (noItemsText) noItemsText.style.display = "block";
+          listDiv.style.display = "none";
+        } else {
+          if (noItemsText) noItemsText.style.display = "none";
+          listDiv.style.display = "flex";
+
+          locations.forEach((location) => {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "location-item";
+
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "location-name";
+            nameSpan.textContent = location;
+            nameSpan.onclick = () => selectFn(location);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "location-delete-btn";
+            deleteBtn.innerHTML = "&times;";
+            deleteBtn.setAttribute("aria-label", location + " 삭제");
+            deleteBtn.onclick = (event) => deleteFn(location, event);
+
+            itemDiv.appendChild(nameSpan);
+            itemDiv.appendChild(deleteBtn);
+            listDiv.appendChild(itemDiv);
+          });
+        }
+      }
+
+      function deleteLocationFromList(
+        storageKey,
+        locationToDelete,
+        refreshModalFn
+      ) {
+        try {
+          let locations = JSON.parse(localStorage.getItem(storageKey) || "[]");
+          locations = locations.filter((item) => item !== locationToDelete);
+          localStorage.setItem(storageKey, JSON.stringify(locations));
+          refreshModalFn();
+        } catch (e) {
+          console.error(`${storageKey} 삭제 실패:`, e);
+          showToast("항목 삭제에 실패했습니다.", true);
+        }
+      }
+
+      function quickSearch(type) {
+        if (type === "recent") {
+          openRecentLocationsModal();
+        } else if (type === "home") {
+          openHomeLocationsModal();
+        } else if (type === "work") {
+          openCompanyLocationsModal();
+        }
+      }
+
+      // ==== 초기 실행 ====
+
+      try {
+        Kakao.init("26e11c4d43fec012ee00f28f68e17244");
+      } catch (e) {
+        console.error("카카오 소셜 SDK 초기화 실패", e);
+        showToast("카카오 SDK 로딩 실패. 새로고침 해주세요.", true);
+      }
+
+      try {
+        kakao.maps.load(() => {
+          initializeMap();
+          checkKakaoLoginStatus();
+          setInterval(checkKakaoLoginStatus, 1800000);
+          showLoading(false);
+        });
+      } catch (e) {
+        console.error("kakao.maps.load 호출 실패", e);
+        showToast("카카오맵 SDK 로딩 실패. 새로고침 해주세요.", true);
+      }
+    </script>
+  </body>
+</html>

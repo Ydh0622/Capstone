@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 페이지</title>
+    <link rel="stylesheet" href="/static/Rstyle.css"> <!-- 여기를 반드시 확인 -->
+</head>
+<body>
+    <div class="container">
+        <h2>{{ place_name }} 리뷰</h2>
+
+        <h3>리뷰 목록</h3>
+        <div id="reviews-list"></div>
+
+        <h3>리뷰 작성</h3>
+        <div class="review-form">
+            <input type="hidden" id="place_id" value="{{ place_id }}">
+            <input type="hidden" id="user_id" value="{{ user_id }}">
+            <input type="text" id="username" placeholder="이름 입력" value="{{ username }}" readonly>
+            <select id="rating">
+                <option value="5">⭐️⭐️⭐️⭐️⭐️ (5점)</option>
+                <option value="4">⭐️⭐️⭐️⭐️ (4점)</option>
+                <option value="3">⭐️⭐️⭐️ (3점)</option>
+                <option value="2">⭐️⭐️ (2점)</option>
+                <option value="1">⭐️ (1점)</option>
+            </select>
+            <textarea id="comment" placeholder="리뷰를 입력하세요"></textarea>
+            <button onclick="submitReview()">리뷰 제출</button>
+        </div>
+    </div>
+
+    <script src="/static/review.js"></script>
+</body>
+</html>

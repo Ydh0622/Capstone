@@ -1,0 +1,993 @@
+/* =======================
+   기본 설정 (폰트, 배경 등)
+======================= */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #343a40;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* =======================
+   네비게이션 바 (.navbar)
+======================= */
+.navbar {
+  width: 100%;
+  height: 60px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 0 0 14px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  margin-bottom: 25px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+.navbar-section {
+  display: flex;
+  align-items: center;
+}
+.navbar-left,
+.navbar-right {
+  flex: 0 0 auto;
+}
+.navbar-right {
+  gap: 10px;
+}
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.navbar-toggle,
+.navbar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.navbar-toggle {
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  font-size: 20px;
+}
+.navbar-toggle:hover {
+  background: #e9ecef;
+  color: #4caf50;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.navbar-icon {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #868e96;
+  border-radius: 50%;
+  transition: color 0.2s, background-color 0.2s;
+}
+.navbar-icon:hover {
+  color: #4caf50;
+  background-color: #f1f3f5;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #4caf50;
+  user-select: none;
+}
+
+/* =======================
+   사이드 메뉴 (#sidebarMenu)
+======================= */
+#sidebarMenu {
+  display: none;
+  position: absolute;
+  left: 10px;
+  top: 62px;
+  z-index: 1100;
+  background: #ffffff;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  min-width: 140px;
+  padding: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  border: 1px solid #f1f1f1;
+}
+#sidebarMenu button {
+  background: none;
+  border: none;
+  color: #495057;
+  padding: 9px 14px;
+  font-size: 14px;
+  text-align: left;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 2px;
+}
+#sidebarMenu button:last-child {
+  margin-bottom: 0;
+}
+#sidebarMenu button:hover {
+  background: #4caf50;
+  color: #ffffff;
+}
+
+/* =======================
+   모달 공통 (.modal)
+======================= */
+.modal {
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+}
+.modal-content {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+  padding: 35px 30px;
+  width: 90%;
+  max-width: 360px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+.modal-title {
+  color: #343a40;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+.modal-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: none;
+  border: none;
+  color: #adb5bd;
+  font-size: 24px;
+  line-height: 1;
+  padding: 5px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.modal-close:hover {
+  color: #495057;
+}
+
+/* =======================
+   로그인 모달 (#loginModal)
+======================= */
+.kakao-login-btn {
+  width: 100%;
+  height: 48px;
+  background: #fee500;
+  color: #191600;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.kakao-login-btn:hover {
+  background: #fddc00;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.kakao-icon {
+  font-size: 18px;
+}
+
+/* =======================
+   공유 모달
+======================= */
+.share-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+  width: 100%;
+}
+.share-buttons-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #333;
+  line-height: 1.4;
+}
+.share-buttons-grid button:hover {
+  background-color: #f0f0f0;
+}
+.share-buttons-grid button span {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+/* =======================
+   신규: 이동수단 선택 모달 (.vehicle-select-grid)
+======================= */
+.vehicle-select-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+  width: 100%;
+}
+.vehicle-select-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #333;
+  line-height: 1.4;
+}
+.vehicle-select-grid button:hover {
+  background-color: #f0f0f0;
+}
+.vehicle-select-grid button span {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+/* =======================
+   토스트 알림
+======================= */
+#toast {
+  visibility: hidden;
+  min-width: 250px;
+  max-width: 90%;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 16px 20px;
+  position: fixed;
+  z-index: 10000;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  font-size: 15px;
+  opacity: 0;
+  transition: visibility 0.5s, opacity 0.5s linear, bottom 0.5s ease-out;
+}
+#toast.show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 50px;
+}
+#toast.error {
+  background-color: #d9534f;
+}
+
+/* =======================
+   메인 컨텐츠 (.container)
+======================= */
+.container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 30px 35px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+.container h2 {
+  font-size: 26px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #4caf50;
+  font-weight: 700;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+#kakaoUserInfo {
+  margin: 20px 0;
+  font-size: 16px;
+  color: #495057;
+  min-height: 24px;
+}
+
+/* =======================
+   검색 관련 요소들
+======================= */
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin: 25px auto 15px;
+  max-width: 650px;
+  align-items: center;
+}
+.search-container input[type="text"] {
+  padding: 12px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 16px;
+  flex-grow: 1;
+  min-width: 150px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-container input[type="text"]:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.search-container button {
+  padding: 12px 18px;
+  font-size: 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.search-container button:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+}
+.search-container button:active {
+  transform: translateY(0);
+}
+
+/* 빠른 검색 버튼 */
+.quick-search-container {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 0 auto 25px;
+  max-width: 650px;
+}
+.quick-search-container button {
+  padding: 6px 12px;
+  font-size: 13px;
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.quick-search-container button:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+/* =======================
+   슬라이더 라벨 및 스타일
+======================= */
+.container > label[for="radiusSlider"] {
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: #495057;
+  max-width: 650px;
+  margin: 20px auto 5px;
+}
+#radiusSlider {
+  width: 100%;
+  max-width: 650px;
+  cursor: pointer;
+  margin-top: 5px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: #dee2e6;
+  border-radius: 5px;
+  outline: none;
+}
+#radiusSlider::-webkit-slider-thumb,
+#radiusSlider::-moz-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #4caf50;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+#radiusValue {
+  display: block;
+  text-align: right;
+  margin: 5px auto 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4caf50;
+  max-width: 650px;
+}
+
+/* =======================
+   카테고리 및 키워드 입력 컨테이너
+======================= */
+.category-container,
+.keyword-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.category-container label,
+.keyword-container label {
+  margin: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: #495057;
+}
+.category-container select,
+.keyword-container input[type="text"] {
+  padding: 9px 12px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  font-size: 14px;
+  margin: 0;
+  flex-grow: 1;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.keyword-container input[type="text"]:focus,
+.category-container select:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* =======================
+   지도 및 결과 영역
+======================= */
+#loadingSpinner {
+  display: none;
+  margin: 40px 0;
+  text-align: center;
+}
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4caf50;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+#loadingSpinner span {
+  vertical-align: middle;
+  font-size: 14px;
+  color: #555;
+}
+
+#map {
+  margin-top: 30px;
+  width: 100%;
+  height: 400px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+#results {
+  margin-top: 30px;
+  text-align: left;
+  max-height: 450px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background-color: #fff;
+}
+#results > p:first-of-type {
+  font-size: 14px;
+  color: #495057;
+  margin: 0;
+  padding: 10px 15px;
+  border-bottom: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+#results > p:first-of-type b {
+  color: #4caf50;
+}
+#results > p[style*="#a00"] {
+  padding: 25px 15px;
+  color: #868e96;
+  font-size: 15px;
+  text-align: center;
+  border-bottom: none;
+}
+
+.result-item {
+  padding: 15px;
+  border-bottom: 1px solid #f1f3f5;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  position: relative;
+}
+.result-item:last-child {
+  border-bottom: none;
+}
+.result-item:hover {
+  background-color: #f8f9fa;
+}
+.result-item.selected {
+  background-color: #e7f3e7;
+  border-left: 4px solid #4caf50;
+  padding-left: 11px;
+}
+.result-item span,
+.result-item a {
+  vertical-align: middle;
+  line-height: 1.5;
+}
+.result-item span {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+/* 내부 요소 클래스 (리뷰/별점 UI 제거됨) */
+.result-item-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #343a40;
+  margin-right: 6px;
+}
+.result-item-category {
+  font-size: 13px;
+  color: #868e96;
+}
+.result-item-address {
+  font-size: 14px;
+  color: #495057;
+  display: block;
+  margin-top: 4px;
+}
+.result-item-contact {
+  margin-top: 6px;
+}
+.result-item-contact > span {
+  font-size: 13px;
+  color: #6c757d;
+  display: block;
+  margin-bottom: 4px;
+}
+.result-item-contact > a {
+  font-size: 13px;
+  color: #007bff;
+  text-decoration: none;
+  margin-left: 0;
+  display: block;
+}
+.result-item-contact > a:hover {
+  text-decoration: underline;
+}
+
+.result-item-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+/* 즐겨찾기 버튼 복원 */
+.fav-btn {
+  background: none !important;
+  border: none !important;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 5px !important;
+  line-height: 1;
+  margin-right: 6px !important;
+  vertical-align: middle;
+  transition: color 0.2s, transform 0.2s;
+}
+.fav-btn.gold {
+  color: #fcc419;
+}
+.fav-btn.gray {
+  color: #ced4da;
+}
+.fav-btn:hover {
+  color: #f59f00;
+  transform: scale(1.15);
+}
+.result-item button {
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.result-item button:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+/* 첫번째 버튼(공유) 아이콘 크기 조절 - fav-btn이 첫번째 자식이 됨에 따라 두번째 버튼 선택 */
+.result-item button:nth-child(2) {
+  font-size: 13px;
+  padding: 5px 8px;
+}
+
+/* =======================
+   주소 설정 모달 관련
+======================= */
+#addressInput {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+#addressInput:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+#saveAddressBtn {
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+#saveAddressBtn:hover {
+  background-color: #45a049;
+}
+
+/* 최근 위치 모달 공통 목록 스타일 */
+.locations-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+  margin-bottom: 15px;
+}
+.location-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.location-name {
+  flex-grow: 1;
+  cursor: pointer;
+  color: #343a40;
+  padding-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.location-name:hover {
+  color: #4caf50;
+}
+.location-delete-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #adb5bd;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0 5px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.location-delete-btn:hover {
+  color: #d9534f;
+}
+.no-items-text {
+  color: #868e96;
+  text-align: center;
+  padding: 10px 0;
+  margin: 0 0 15px 0;
+  width: 100%;
+}
+/* '새 위치 추가' 버튼 스타일 */
+.add-location-btn {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.add-location-btn:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+/* =======================
+   반응형 (모바일 768px 이하)
+======================= */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  .navbar {
+    height: 56px;
+    padding: 0 15px;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 15px;
+  }
+  .navbar-logo {
+    font-size: 17px;
+  }
+  .navbar-toggle,
+  .navbar-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+  }
+  .navbar-right {
+    gap: 4px;
+  }
+  #sidebarMenu {
+    top: 58px;
+    left: 8px;
+    min-width: 125px;
+    padding: 6px;
+  }
+  #sidebarMenu button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .modal-content {
+    padding: 30px 20px;
+  }
+  .share-buttons-grid,
+  .vehicle-select-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .share-buttons-grid button,
+  .vehicle-select-grid button {
+    font-size: 12px;
+    padding: 10px 5px;
+  }
+  .share-buttons-grid button span,
+  .vehicle-select-grid button span {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+  #toast {
+    min-width: 90%;
+    bottom: 20px;
+  }
+  #toast.show {
+    bottom: 30px;
+  }
+  .container {
+    margin: 10px;
+    padding: 20px 15px;
+  }
+  .container h2 {
+    font-size: 22px;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+  #kakaoUserInfo {
+    font-size: 15px;
+    margin: 15px 0;
+  }
+  .search-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    max-width: none;
+    margin: 20px 0 10px;
+  }
+  .search-container input[type="text"] {
+    font-size: 15px;
+    padding: 11px 14px;
+  }
+  .search-container button {
+    font-size: 14px;
+    padding: 11px 15px;
+  }
+  .quick-search-container {
+    gap: 6px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 2px 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .quick-search-container::-webkit-scrollbar {
+    display: none;
+  }
+  .quick-search-container button {
+    font-size: 12px;
+    padding: 5px 10px;
+    flex-shrink: 0;
+  }
+  .container > label[for="radiusSlider"] {
+    margin: 15px 0 5px;
+    font-size: 13px;
+  }
+  #radiusValue {
+    font-size: 13px;
+  }
+
+  /* 정렬 컨테이너 관련 스타일 제거 */
+
+  .category-container,
+  .keyword-container {
+    margin-bottom: 12px;
+    gap: 8px;
+    max-width: none;
+  }
+  .category-container label,
+  .keyword-container label {
+    white-space: nowrap;
+    width: auto;
+    text-align: left;
+  }
+  .category-container select,
+  .keyword-container input[type="text"] {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  #map {
+    height: 250px;
+    margin-top: 25px;
+  }
+  #results {
+    margin-top: 25px;
+    max-height: 300px;
+  }
+  #results > p:first-of-type {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+  #results > p[style*="#a00"] {
+    font-size: 14px;
+    padding: 15px;
+  }
+  .result-item {
+    padding: 12px 10px;
+  }
+  .result-item-name {
+    font-size: 15px;
+  }
+  .result-item-category {
+    font-size: 12px;
+  }
+  .result-item-address {
+    font-size: 13px;
+    margin-top: 3px;
+  }
+  .result-item-contact {
+    margin-top: 5px;
+  }
+  .result-item-contact > span {
+    font-size: 12px;
+  }
+  .result-item-contact > a {
+    font-size: 12px;
+  }
+  .result-item-actions {
+    margin-top: 8px;
+  }
+  .result-item button {
+    padding: 5px 10px;
+    font-size: 11px;
+    margin-right: 4px;
+  }
+  /* 즐겨찾기 버튼 모바일 개선 */
+  .fav-btn {
+    font-size: 20px;
+    margin-right: 4px !important;
+  }
+
+  /* 최근 위치 */
+  .location-item {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .location-delete-btn {
+    font-size: 18px;
+  }
+}
